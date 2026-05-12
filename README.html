@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Wiki</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface2: #f4f1ec;
+    --border: #e8e3dc;
+    --text: #1a1612;
+    --muted: #6b6560;
+    --accent: #c4352a;
+    --accent-bg: #fdf0ef;
+    --accent-border: #e8a09c;
+    --code-bg: #f4f1ec;
+    --r: 8px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --mono: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+  [data-dark] {
+    --bg: #111010; --surface: #1c1b1a; --surface2: #242220;
+    --border: #2e2c2a; --text: #f0ede8; --muted: #9b958e;
+    --accent: #e05c55; --accent-bg: #1f1210; --accent-border: #7a2a26;
+    --code-bg: #232120;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* Header */
+  header { padding: 44px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+  .hrow { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .icon { width: 40px; height: 40px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .icon svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-top: 3px; }
+  .dark-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 13px; font-size: 0.82rem; color: var(--muted); cursor: pointer; font-family: var(--font); }
+  .dark-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  /* Nav */
+  .nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 40px; }
+  .nav a { text-decoration: none; font-size: 0.82rem; padding: 4px 11px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); transition: all .15s; }
+  .nav a:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
+
+  /* Sections */
+  section { margin-bottom: 52px; }
+  h2 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 18px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); display: inline-block; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 22px 0 10px; }
+  p { margin-bottom: 14px; }
+  a { color: var(--accent); }
+
+  /* Callout */
+  .note { background: var(--accent-bg); border-left: 4px solid var(--accent); border: 1px solid var(--accent-border); border-left-width: 4px; border-radius: var(--r); padding: 14px 18px; font-size: 0.9rem; margin: 16px 0; }
+  .note strong { color: var(--accent); }
+
+  /* Code */
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 0.81rem; line-height: 1.65; margin: 14px 0; }
+  code { font-family: var(--mono); font-size: 0.84em; background: var(--code-bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+
+  /* Tables */
+  .tbl { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { background: var(--surface2); text-align: left; padding: 9px 13px; border: 1px solid var(--border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  td { padding: 9px 13px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--surface2); }
+  .cmd { font-family: var(--mono); font-size: 0.82rem; color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+  /* Layer cards */
+  .layers { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 18px 0; }
+  .layer { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: var(--r); padding: 16px 18px; }
+  .layer .lnum { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin-bottom: 4px; }
+  .layer .lname { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+  .layer .ldesc { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+  .layer .lpath { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+
+  /* Steps */
+  ol.steps { list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; display: flex; gap: 13px; align-items: flex-start; margin-bottom: 16px; font-size: 0.95rem; }
+  ol.steps li::before { content: counter(s); min-width: 26px; height: 26px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  ol.steps li > div { flex: 1; }
+  ol.steps li strong { display: block; margin-bottom: 4px; }
+
+  /* Diagrams */
+  .dbox { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 24px 20px; margin: 18px 0; overflow-x: auto; }
+  .dbox svg { display: block; max-width: 100%; height: auto; }
+  .dlabel { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 14px; }
+
+  /* Page type pills */
+  .types { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+  .ptype { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; flex: 1; min-width: 140px; }
+  .ptype .ptname { font-size: 0.82rem; font-weight: 700; color: var(--accent); margin-bottom: 3px; font-family: var(--mono); }
+  .ptype .ptdesc { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="hrow">
+    <div class="brand">
+      <div class="icon">
+        <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+      </div>
+      <div>
+        <h1>LLM Wiki</h1>
+        <div class="sub">A persistent knowledge base maintained by Claude</div>
+      </div>
+    </div>
+    <button class="dark-btn" onclick="document.documentElement.toggleAttribute('data-dark')">Toggle dark</button>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#what">What is this</a>
+  <a href="#organization">Organization</a>
+  <a href="#setup">Setup</a>
+  <a href="#use">Daily use</a>
+  <a href="#currency">Knowledge currency</a>
+  <a href="#skills">Skills</a>
+  <a href="#how">How it works</a>
+  <a href="#obsidian">Obsidian</a>
+</nav>
+
+<!-- WHAT IS THIS -->
+<section id="what">
+  <h2>What is this?</h2>
+  <p>Most tools make you search raw documents every time you ask a question. This is different. Claude reads each source once, extracts what matters, and weaves it into a growing wiki of interlinked pages. Every new source makes the wiki richer. Every question you ask can be filed back as a permanent page.</p>
+  <div class="note"><strong>The key idea:</strong> Knowledge accumulates instead of being rediscovered from scratch. You supply the sources and questions. Claude handles the summarizing, cross-referencing, filing, and consistency.</div>
+  <p>This folder is a <strong>reusable template</strong>. Copy it to create different wikis — AI research, personal notes, competitive analysis. Only the top-level category names need to change between instances.</p>
+</section>
+
+<!-- ORGANIZATION -->
+<section id="organization">
+  <h2>How the wiki is organized</h2>
+  <p>Three layers, each with a clear owner:</p>
+
+  <div class="layers">
+    <div class="layer">
+      <div class="lnum">Layer 1</div>
+      <div class="lname">Staging</div>
+      <div class="ldesc">Your inbox. Drop files here or paste URLs. Claude empties it when you run a skill.</div>
+      <div class="lpath">staging/files/ &nbsp; staging/links.md</div>
+    </div>
+    <div class="layer">
+      <div class="lnum">Layer 2</div>
+      <div class="lname">Raw sources</div>
+      <div class="ldesc">Immutable archive, organized by topic. Claude files sources here. You never edit.</div>
+      <div class="lpath">raw/llm/rag/graph-rag/</div>
+    </div>
+    <div class="layer">
+      <div class="lnum">Layer 3</div>
+      <div class="lname">Wiki</div>
+      <div class="ldesc">The knowledge base. Claude writes and maintains all pages. You read and explore.</div>
+      <div class="lpath">wiki/sources/ &nbsp; wiki/concepts/</div>
+    </div>
+  </div>
+
+  <h3>The raw/ folder — capability tree</h3>
+  <p>Files in <code>raw/</code> are organized in a business capability hierarchy — up to 4 levels deep. Claude builds this tree dynamically as you ingest. You only provide the top-level names.</p>
+
+  <div class="dbox">
+    <div class="dlabel">raw/ capability tree — example</div>
+    <svg viewBox="0 0 560 220" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="12">
+      <!-- root -->
+      <rect x="10" y="94" width="80" height="28" rx="5" fill="#fdf0ef" stroke="#e8a09c" stroke-width="1.5"/>
+      <text x="50" y="113" text-anchor="middle" fill="#c4352a" font-weight="700">raw/</text>
+      <!-- level 1 -->
+      <rect x="130" y="20" width="72" height="26" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="166" y="37" text-anchor="middle" fill="#1a1612">llm/</text>
+      <rect x="130" y="94" width="72" height="26" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="166" y="111" text-anchor="middle" fill="#1a1612">agents/</text>
+      <rect x="130" y="168" width="100" height="26" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="180" y="185" text-anchor="middle" fill="#1a1612">infrastructure/</text>
+      <!-- connectors root→l1 -->
+      <line x1="90" y1="108" x2="128" y2="33" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="90" y1="108" x2="128" y2="107" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="90" y1="108" x2="128" y2="181" stroke="#e8e3dc" stroke-width="1.2"/>
+      <!-- level 2 -->
+      <rect x="248" y="8" width="64" height="24" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="280" y="24" text-anchor="middle" fill="#1a1612">rag/</text>
+      <rect x="248" y="38" width="80" height="24" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="288" y="54" text-anchor="middle" fill="#1a1612">fine-tuning/</text>
+      <rect x="248" y="86" width="84" height="24" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="290" y="102" text-anchor="middle" fill="#1a1612">frameworks/</text>
+      <rect x="248" y="116" width="68" height="24" rx="4" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="282" y="132" text-anchor="middle" fill="#1a1612">memory/</text>
+      <!-- connectors l1→l2 -->
+      <line x1="202" y1="33" x2="246" y2="20" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="202" y1="33" x2="246" y2="50" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="202" y1="107" x2="246" y2="98" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="202" y1="107" x2="246" y2="128" stroke="#e8e3dc" stroke-width="1.2"/>
+      <!-- level 3 -->
+      <rect x="374" y="2" width="80" height="22" rx="4" fill="#ffffff" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="414" y="17" text-anchor="middle" fill="#6b6560" font-size="11">graph-rag/</text>
+      <rect x="374" y="30" width="80" height="22" rx="4" fill="#ffffff" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="414" y="45" text-anchor="middle" fill="#6b6560" font-size="11">hybrid-rag/</text>
+      <rect x="374" y="80" width="60" height="22" rx="4" fill="#ffffff" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="404" y="95" text-anchor="middle" fill="#6b6560" font-size="11">adk/</text>
+      <rect x="374" y="108" width="74" height="22" rx="4" fill="#ffffff" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="411" y="123" text-anchor="middle" fill="#6b6560" font-size="11">langchain/</text>
+      <!-- connectors l2→l3 -->
+      <line x1="312" y1="20" x2="372" y2="13" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="312" y1="20" x2="372" y2="41" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="332" y1="98" x2="372" y2="91" stroke="#e8e3dc" stroke-width="1.2"/>
+      <line x1="332" y1="98" x2="372" y2="119" stroke="#e8e3dc" stroke-width="1.2"/>
+      <!-- taxonomy label -->
+      <rect x="10" y="168" width="108" height="42" rx="5" fill="white" stroke="#e8a09c" stroke-width="1.2"/>
+      <text x="64" y="185" text-anchor="middle" font-size="10" fill="#c4352a" font-weight="600">taxonomy.md</text>
+      <text x="64" y="200" text-anchor="middle" font-size="9" fill="#6b6560">Claude keeps</text>
+      <text x="64" y="212" text-anchor="middle" font-size="9" fill="#6b6560">this map current</text>
+    </svg>
+  </div>
+
+  <h3>The wiki/ pages — five types</h3>
+  <div class="types">
+    <div class="ptype"><div class="ptname">sources/</div><div class="ptdesc">One page per ingested document — summary, key points, link back to raw file</div></div>
+    <div class="ptype"><div class="ptname">concepts/</div><div class="ptdesc">Technique or idea pages — what it is, how it works, which sources cover it</div></div>
+    <div class="ptype"><div class="ptname">entities/</div><div class="ptdesc">Specific models, people, organizations and what the wiki knows about them</div></div>
+    <div class="ptype"><div class="ptname">analyses/</div><div class="ptdesc">Comparisons, discoveries, and answered questions filed back from /query</div></div>
+    <div class="ptype"><div class="ptname">index · log · overview</div><div class="ptdesc">Catalog, history, and evolving synthesis of everything in the wiki</div></div>
+  </div>
+  <p>Every page has a small YAML header with type, tags, and dates. Source pages also include a <code>raw_path</code> — a direct link back to the original file in <code>raw/</code>. Claude uses this when a query needs more detail than the summary provides.</p>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <h2>Setup</h2>
+  <ol class="steps">
+    <li>
+      <div>
+        <strong>Copy the template</strong>
+        <pre>cp -r path/to/init/ my-wiki/
+cd my-wiki/</pre>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Set your domain — one edit, 3–5 lines</strong>
+        <p>Open <code>CLAUDE.md</code>, find the <strong>Seed Taxonomy</strong> section, and replace the top-level categories:</p>
+        <pre># Seed Taxonomy — AI/LLM Wiki   ← change the comment
+llm                               ← replace these with your
+agents                            ← domain's root categories
+infrastructure                    ← (3–5 items)</pre>
+        <p style="margin-top:10px; font-size:0.875rem; color:var(--muted)">Other examples: <code>health goals learning</code> for a personal wiki, or <code>product engineering customers</code> for a business wiki. Levels 2–4 grow automatically from your content.</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Install Python tools</strong>
+        <pre>bash tools/setup.sh</pre>
+        <p style="font-size:0.875rem; color:var(--muted)">Creates <code>tools/.venv/</code> with markitdown (converts files/URLs to markdown) and rank_bm25 (search). Takes about 30 seconds.</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Open in Claude Code</strong>
+        <p>Open the wiki folder as the project root. The <code>/ingest-files</code>, <code>/ingest-links</code>, <code>/query</code>, <code>/lint</code>, and <code>/reorg</code> commands become available immediately.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- DAILY USE -->
+<section id="use">
+  <h2>Daily use</h2>
+
+  <h3>Add a source — file</h3>
+  <ol class="steps">
+    <li><div>Copy or save a file into <code>staging/files/</code> (PDF, markdown, Word doc, text)</div></li>
+    <li><div>Run <code>/ingest-files</code> in Claude Code</div></li>
+    <li><div>Claude reads it, decides where it belongs in <code>raw/</code>, moves it there, and writes wiki pages — all in one pass</div></li>
+    <li><div>Browse updated pages in <code>wiki/</code></div></li>
+  </ol>
+
+  <h3>Add a source — link</h3>
+  <ol class="steps">
+    <li><div>Open <code>staging/links.md</code> and paste a URL on its own line</div></li>
+    <li><div>Run <code>/ingest-links</code></div></li>
+    <li><div>Claude downloads the page as markdown, then processes it like a file. The URL is removed once done.</div></li>
+  </ol>
+
+  <h3>Ask a question</h3>
+  <pre>/query What is the difference between Graph RAG and standard RAG?</pre>
+  <p>Claude reads relevant wiki pages and answers with links to sources. If the wiki summary isn't detailed enough, it reads the original raw file. If the answer is useful to keep, it's filed as a new page in <code>wiki/analyses/</code>.</p>
+
+  <h3>Keep the wiki healthy</h3>
+  <p>Run <code>/lint</code> occasionally — Claude scans for orphan pages, broken links, contradictions, stale pages, and concepts that need their own page. Run <code>/reorg</code> when <code>raw/</code> structure feels off — Claude proposes changes and waits for your approval before moving anything.</p>
+</section>
+
+<!-- KNOWLEDGE CURRENCY -->
+<section id="currency">
+  <h2>Keeping knowledge current</h2>
+  <p>In fast-moving fields like AI/LLM, sources from a few months ago can already be partially outdated. The wiki has three mechanisms to handle this without losing history.</p>
+
+  <h3>Automatic update check on every ingest</h3>
+  <p>When you ingest a new source, Claude automatically checks existing related pages for conflicts. If the new source updates a claim, it rewrites that section in-place. If it contradicts something, both positions are noted with source dates. If it directly supersedes an older source, the old source page is quietly marked <code>status: superseded</code> with a link to the new one. No extra steps needed.</p>
+
+  <h3>Page freshness — <code>last_verified</code></h3>
+  <p>Every concept and entity page carries a <code>last_verified</code> date. When <code>/lint</code> runs, it surfaces pages not reviewed in 60–90 days as candidates for refresh. In AI/LLM, 60 days is a reasonable threshold.</p>
+
+  <div class="dbox">
+    <div class="dlabel">Knowledge lifecycle</div>
+    <svg viewBox="0 0 580 90" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="12">
+      <defs><marker id="arc" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#c4352a"/></marker></defs>
+      <!-- boxes -->
+      <rect x="8" y="30" width="96" height="30" rx="5" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="56" y="49" text-anchor="middle" fill="#c4352a" font-weight="600">Ingest source</text>
+      <line x1="104" y1="45" x2="134" y2="45" stroke="#c4352a" stroke-width="1.5" marker-end="url(#arc)"/>
+      <rect x="136" y="30" width="110" height="30" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="191" y="44" text-anchor="middle" fill="#1a1612">Update check</text>
+      <text x="191" y="56" text-anchor="middle" fill="#6b6560" font-size="10">rewrite stale claims</text>
+      <line x1="246" y1="45" x2="276" y2="45" stroke="#c4352a" stroke-width="1.5" marker-end="url(#arc)"/>
+      <rect x="278" y="30" width="110" height="30" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="333" y="44" text-anchor="middle" fill="#1a1612">last_verified</text>
+      <text x="333" y="56" text-anchor="middle" fill="#6b6560" font-size="10">set to today</text>
+      <line x1="388" y1="45" x2="418" y2="45" stroke="#c4352a" stroke-width="1.5" marker-end="url(#arc)"/>
+      <rect x="420" y="30" width="110" height="30" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="475" y="44" text-anchor="middle" fill="#1a1612">/lint flags stale</text>
+      <text x="475" y="56" text-anchor="middle" fill="#6b6560" font-size="10">after 60–90 days</text>
+      <!-- /refresh loop back -->
+      <path d="M 530 60 Q 530 82 333 82 Q 136 82 136 62" fill="none" stroke="#9b958e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arc)"/>
+      <text x="333" y="78" text-anchor="middle" fill="#6b6560" font-size="10">/refresh rewrites + resets last_verified</text>
+    </svg>
+  </div>
+
+  <h3>Targeted refresh — <code>/refresh &lt;page&gt;</code></h3>
+  <p>When you know a topic has moved on, run <code>/refresh</code> against the relevant page:</p>
+  <pre>/refresh rag
+/refresh GraphRAG</pre>
+  <p>Claude reads the page, finds all contributing sources, scans <code>raw/</code> for newer files in the same topic area, and rewrites stale claims. The main body always reflects current best understanding. Anything removed from the main body moves to a <code>## Changelog</code> section — the history is preserved, just not front and centre.</p>
+
+  <h3>Source pages are never deleted</h3>
+  <p>Source pages (<code>wiki/sources/</code>) are permanent records of what a document said at a point in time. They are never rewritten. When newer work replaces them, they simply gain a <code>superseded_by</code> link in their header — giving you a full audit trail of how the field's thinking evolved.</p>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Situation</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>New source adds detail to a concept</td><td>Concept page expanded; <code>sources</code> count incremented</td></tr>
+        <tr><td>New source updates a specific claim</td><td>Claim rewritten in-place; Changelog entry added</td></tr>
+        <tr><td>New source contradicts a claim</td><td>Both positions noted with source dates; current understanding prevails in main body</td></tr>
+        <tr><td>New source entirely supersedes an old one</td><td>Concept page rewritten; old source page gets <code>status: superseded</code> + <code>superseded_by</code> link</td></tr>
+        <tr><td>Technique becomes obsolete (not wrong)</td><td><code>## Evolution</code> section added noting when and why it was superseded</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <h2>Skills reference</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Skill</th><th>What it does</th><th>When to use</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd">/ingest-files</span></td><td>Classify, move to <code>raw/</code>, check existing pages for conflicts, write wiki pages, clear staging</td><td>After dropping files in staging</td></tr>
+        <tr><td><span class="cmd">/ingest-links</span></td><td>Download URLs via markitdown, then ingest like files. Removes processed URLs.</td><td>After pasting links in staging/links.md</td></tr>
+        <tr><td><span class="cmd">/query &lt;question&gt;</span></td><td>Answer from wiki; reads raw source if detail is needed; files valuable answers back</td><td>Any question about your knowledge</td></tr>
+        <tr><td><span class="cmd">/refresh &lt;page&gt;</span></td><td>Bring one page up to date — compare against newer sources, rewrite stale claims, log changes</td><td>When /lint flags a page stale, or you know a topic has moved</td></tr>
+        <tr><td><span class="cmd">/lint</span></td><td>Health check — fix orphans, broken links, contradictions; surface stale pages (last_verified &gt; 60–90 days)</td><td>Periodically as wiki grows</td></tr>
+        <tr><td><span class="cmd">/reorg</span></td><td>Propose raw/ cleanup; after approval move files and update all wiki raw_path links</td><td>When taxonomy feels messy</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <h2>How it works</h2>
+
+  <h3>Single-pass ingest</h3>
+  <p>Each source is read exactly once. In that single read, Claude simultaneously decides where the file belongs in <code>raw/</code> <em>and</em> writes all the wiki pages. No re-reads — the content is already in context.</p>
+
+  <div class="dbox">
+    <div class="dlabel">Ingest — one read, two outputs</div>
+    <svg viewBox="0 0 520 80" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="12">
+      <defs><marker id="ar" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#c4352a"/></marker></defs>
+      <rect x="10" y="26" width="90" height="28" rx="5" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="55" y="44" text-anchor="middle" fill="#c4352a" font-weight="600">Source file</text>
+      <line x1="100" y1="40" x2="138" y2="40" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar)"/>
+      <rect x="140" y="26" width="88" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="184" y="40" text-anchor="middle" fill="#1a1612">Read once</text>
+      <text x="184" y="52" text-anchor="middle" fill="#6b6560" font-size="10">single pass</text>
+      <!-- fork -->
+      <line x1="228" y1="40" x2="264" y2="18" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="228" y1="40" x2="264" y2="62" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar)"/>
+      <rect x="266" y="6" width="110" height="26" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="321" y="23" text-anchor="middle" fill="#1a1612">File to raw/topic/</text>
+      <rect x="266" y="48" width="110" height="26" rx="5" fill="#fdf0ef" stroke="#e8a09c" stroke-width="1.2"/>
+      <text x="321" y="65" text-anchor="middle" fill="#c4352a">Write wiki pages</text>
+      <!-- join -->
+      <line x1="376" y1="19" x2="412" y2="40" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar)"/>
+      <line x1="376" y1="61" x2="412" y2="40" stroke="#c4352a" stroke-width="1.5"/>
+      <rect x="414" y="26" width="96" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="462" y="40" text-anchor="middle" fill="#1a1612">Update index + log</text>
+    </svg>
+  </div>
+
+  <h3>Taxonomy Architect — dynamic classification</h3>
+  <p>You never manually organize <code>raw/</code>. Claude classifies each source during ingest using <code>raw/taxonomy.md</code> as a reference. New sub-categories are created when needed. The tree grows from your content.</p>
+
+  <div class="dbox">
+    <div class="dlabel">How a source gets classified</div>
+    <svg viewBox="0 0 480 110" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="12">
+      <defs><marker id="ar2" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#c4352a"/></marker></defs>
+      <rect x="8" y="40" width="86" height="28" rx="5" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="51" y="58" text-anchor="middle" fill="#c4352a" font-weight="600">New source</text>
+      <line x1="94" y1="54" x2="130" y2="54" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar2)"/>
+      <rect x="132" y="40" width="98" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="181" y="54" text-anchor="middle" fill="#1a1612">Read taxonomy</text>
+      <text x="181" y="66" text-anchor="middle" fill="#6b6560" font-size="10">raw/taxonomy.md</text>
+      <line x1="230" y1="54" x2="268" y2="54" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar2)"/>
+      <!-- diamond -->
+      <polygon points="296,54 326,36 356,54 326,72" fill="white" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="326" y="51" text-anchor="middle" fill="#1a1612" font-size="11">New</text>
+      <text x="326" y="64" text-anchor="middle" fill="#1a1612" font-size="11">node?</text>
+      <!-- yes -->
+      <line x1="356" y1="54" x2="394" y2="30" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar2)"/>
+      <text x="380" y="27" text-anchor="middle" fill="#6b6560" font-size="10">Yes</text>
+      <rect x="396" y="16" width="76" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="434" y="34" text-anchor="middle" fill="#1a1612">Add node</text>
+      <!-- no -->
+      <line x1="356" y1="54" x2="394" y2="78" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar2)"/>
+      <text x="380" y="95" text-anchor="middle" fill="#6b6560" font-size="10">No</text>
+      <rect x="396" y="64" width="76" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="434" y="82" text-anchor="middle" fill="#1a1612">File to path</text>
+    </svg>
+  </div>
+
+  <h3>Query with raw fallback</h3>
+  <p>Queries answer from the wiki first — it's fast and covers most questions. When more depth is needed, Claude follows the <code>raw_path</code> in the source page's frontmatter straight to the original file in <code>raw/</code>.</p>
+
+  <div class="dbox">
+    <div class="dlabel">Query flow</div>
+    <svg viewBox="0 0 560 80" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="12">
+      <defs><marker id="ar3" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#c4352a"/></marker></defs>
+      <rect x="8" y="26" width="80" height="28" rx="5" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="48" y="44" text-anchor="middle" fill="#c4352a" font-weight="600">Question</text>
+      <line x1="88" y1="40" x2="118" y2="40" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar3)"/>
+      <rect x="120" y="26" width="88" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="164" y="40" text-anchor="middle" fill="#1a1612">index.md</text>
+      <text x="164" y="52" text-anchor="middle" fill="#6b6560" font-size="10">find candidates</text>
+      <line x1="208" y1="40" x2="238" y2="40" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar3)"/>
+      <rect x="240" y="26" width="86" height="28" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="283" y="40" text-anchor="middle" fill="#1a1612">Wiki pages</text>
+      <text x="283" y="52" text-anchor="middle" fill="#6b6560" font-size="10">read summaries</text>
+      <!-- diamond -->
+      <line x1="326" y1="40" x2="358" y2="40" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar3)"/>
+      <polygon points="384,40 404,26 424,40 404,54" fill="white" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="404" y="37" text-anchor="middle" fill="#1a1612" font-size="11">Deep</text>
+      <text x="404" y="50" text-anchor="middle" fill="#1a1612" font-size="11">enough?</text>
+      <!-- yes path -->
+      <line x1="424" y1="40" x2="458" y2="18" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar3)"/>
+      <text x="445" y="14" text-anchor="middle" fill="#6b6560" font-size="10">Yes</text>
+      <rect x="460" y="6" width="82" height="26" rx="5" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="501" y="23" text-anchor="middle" fill="#c4352a" font-weight="600">Answer</text>
+      <!-- no path -->
+      <line x1="424" y1="40" x2="458" y2="62" stroke="#c4352a" stroke-width="1.5" marker-end="url(#ar3)"/>
+      <text x="446" y="78" text-anchor="middle" fill="#6b6560" font-size="10">No — read raw/</text>
+      <rect x="460" y="50" width="82" height="26" rx="5" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="501" y="63" text-anchor="middle" fill="#1a1612">Raw source</text>
+      <text x="501" y="75" text-anchor="middle" fill="#6b6560" font-size="9">via raw_path</text>
+      <!-- raw → answer -->
+      <line x1="501" y1="50" x2="501" y2="32" stroke="#c4352a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#ar3)"/>
+    </svg>
+  </div>
+
+  <h3>Full architecture</h3>
+  <div class="dbox">
+    <div class="dlabel">All components and flows</div>
+    <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif" font-size="12">
+      <defs>
+        <marker id="a6" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#c4352a"/></marker>
+        <marker id="a7" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#9b958e"/></marker>
+      </defs>
+      <!-- Staging -->
+      <rect x="10" y="80" width="120" height="70" rx="7" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="70" y="100" text-anchor="middle" fill="#c4352a" font-weight="700" font-size="11">STAGING</text>
+      <rect x="20" y="106" width="100" height="20" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="70" y="120" text-anchor="middle" fill="#1a1612" font-size="10">staging/files/</text>
+      <rect x="20" y="130" width="100" height="20" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="70" y="144" text-anchor="middle" fill="#1a1612" font-size="10">links.md</text>
+      <!-- raw -->
+      <rect x="240" y="30" width="148" height="120" rx="7" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="314" y="50" text-anchor="middle" fill="#6b6560" font-weight="700" font-size="11">RAW SOURCES</text>
+      <rect x="252" y="58" width="124" height="20" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="314" y="72" text-anchor="middle" fill="#1a1612" font-size="10">raw/taxonomy.md</text>
+      <rect x="252" y="84" width="124" height="20" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="314" y="98" text-anchor="middle" fill="#1a1612" font-size="10">raw/llm/rag/paper.md</text>
+      <rect x="252" y="110" width="124" height="20" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="314" y="124" text-anchor="middle" fill="#1a1612" font-size="10">raw/agents/adk/…</text>
+      <!-- wiki -->
+      <rect x="470" y="16" width="155" height="160" rx="7" fill="#fdf0ef" stroke="#c4352a" stroke-width="1.5"/>
+      <text x="547" y="36" text-anchor="middle" fill="#c4352a" font-weight="700" font-size="11">WIKI</text>
+      <rect x="482" y="44" width="131" height="18" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="547" y="57" text-anchor="middle" fill="#1a1612" font-size="10">wiki/index.md</text>
+      <rect x="482" y="68" width="131" height="18" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="547" y="81" text-anchor="middle" fill="#1a1612" font-size="10">wiki/sources/</text>
+      <rect x="482" y="92" width="131" height="18" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="547" y="105" text-anchor="middle" fill="#1a1612" font-size="10">wiki/concepts/</text>
+      <rect x="482" y="116" width="131" height="18" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="547" y="129" text-anchor="middle" fill="#1a1612" font-size="10">wiki/entities/</text>
+      <rect x="482" y="140" width="131" height="18" rx="3" fill="white" stroke="#e8e3dc" stroke-width="1"/>
+      <text x="547" y="153" text-anchor="middle" fill="#1a1612" font-size="10">wiki/analyses/</text>
+      <!-- you box -->
+      <rect x="10" y="210" width="120" height="44" rx="7" fill="white" stroke="#e8e3dc" stroke-width="1.5"/>
+      <text x="70" y="230" text-anchor="middle" fill="#1a1612" font-weight="600">You</text>
+      <text x="70" y="246" text-anchor="middle" fill="#6b6560" font-size="10">ask questions · browse</text>
+      <!-- tools box -->
+      <rect x="240" y="200" width="148" height="36" rx="6" fill="#f4f1ec" stroke="#e8e3dc" stroke-width="1.2"/>
+      <text x="314" y="215" text-anchor="middle" fill="#6b6560" font-weight="600" font-size="11">TOOLS</text>
+      <text x="314" y="229" text-anchor="middle" fill="#6b6560" font-size="10">fetch_link.py · search.py</text>
+      <!-- arrows -->
+      <line x1="130" y1="106" x2="238" y2="70" stroke="#c4352a" stroke-width="1.5" marker-end="url(#a6)"/>
+      <text x="182" y="76" text-anchor="middle" fill="#c4352a" font-size="10">/ingest-files</text>
+      <line x1="130" y1="140" x2="238" y2="210" stroke="#c4352a" stroke-width="1.5" marker-end="url(#a6)"/>
+      <text x="166" y="185" text-anchor="middle" fill="#c4352a" font-size="10">/ingest-links</text>
+      <line x1="388" y1="80" x2="468" y2="100" stroke="#c4352a" stroke-width="1.5" marker-end="url(#a6)"/>
+      <text x="432" y="82" text-anchor="middle" fill="#c4352a" font-size="10">same pass</text>
+      <line x1="388" y1="218" x2="468" y2="150" stroke="#9b958e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a7)"/>
+      <line x1="130" y1="232" x2="468" y2="170" stroke="#9b958e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a7)"/>
+      <text x="320" y="272" text-anchor="middle" fill="#6b6560" font-size="10">/query</text>
+      <line x1="470" y1="140" x2="390" y2="120" stroke="#9b958e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a7)"/>
+      <text x="432" y="140" text-anchor="middle" fill="#6b6560" font-size="9">raw fallback</text>
+      <!-- legend -->
+      <line x1="10" y1="278" x2="36" y2="278" stroke="#c4352a" stroke-width="1.5" marker-end="url(#a6)"/>
+      <text x="42" y="282" fill="#6b6560" font-size="10">primary</text>
+      <line x1="110" y1="278" x2="136" y2="278" stroke="#9b958e" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a7)"/>
+      <text x="142" y="282" fill="#6b6560" font-size="10">secondary / fallback</text>
+    </svg>
+  </div>
+</section>
+
+<!-- OBSIDIAN -->
+<section id="obsidian">
+  <h2>Obsidian (optional)</h2>
+  <div class="note"><strong>Not required.</strong> The wiki is plain markdown. Claude reads files directly and never uses Obsidian. Any viewer works — VS Code, Typora, GitHub.</div>
+  <p>If you want the graph view and Dataview queries, open your wiki folder as an Obsidian vault:</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Files &amp; links → Attachment folder path</td><td><code>raw/assets</code></td></tr>
+        <tr><td>Files &amp; links → Default location for new notes</td><td><code>wiki/</code></td></tr>
+        <tr><td>Community plugins</td><td>Dataview, Marp</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><code>[[WikiLink]]</code> syntax renders as graph edges automatically. List all pages with Dataview:</p>
+  <pre>TABLE type, updated, sources FROM "wiki"
+SORT updated DESC</pre>
+</section>
+
+<footer>
+  Based on Karpathy's LLM Wiki pattern. Copy <code>init/</code> to create new wikis — only edit the Seed Taxonomy in <code>CLAUDE.md</code> per domain.
+</footer>
+
+</div>
+<script>
+  // Persist dark mode preference
+  if (localStorage.getItem('dark') === '1') document.documentElement.setAttribute('data-dark', '');
+  document.querySelector('.dark-btn').addEventListener('click', function() {
+    const on = document.documentElement.hasAttribute('data-dark');
+    on ? document.documentElement.removeAttribute('data-dark') : document.documentElement.setAttribute('data-dark', '');
+    localStorage.setItem('dark', on ? '0' : '1');
+  });
+</script>
+</body>
+</html>

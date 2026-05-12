@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tools/.venv/bin/pip show *)",
+      "Bash(tools/.venv/bin/python -c \"from markitdown import MarkItDown; print\\('markitdown OK'\\)\")",
+      "Bash(tools/.venv/bin/python tools/search.py --help)"
+    ]
+  }
+}

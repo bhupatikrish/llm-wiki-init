@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment (per-wiki, created by tools/setup.sh)
+tools/.venv/
+
+# Obsidian workspace state (not content)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+
+# Staging files (inbox — don't commit in-progress items)
+staging/files/*
+!staging/files/.gitkeep
+
+# Temp downloads from fetch_link.py
+/tmp/llm-wiki-fetch/
+
+# Editor
+.vscode/
+*.swp
+*.swo
