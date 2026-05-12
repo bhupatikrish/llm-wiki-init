@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Download a URL as markdown using markitdown.
+Download a URL as markdown using docling.
 
 Usage: python tools/fetch_link.py <url> [output_dir]
 
@@ -18,17 +18,19 @@ def main():
         sys.exit(1)
 
     url = sys.argv[1]
-    out_dir = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else pathlib.Path("/tmp/llm-wiki-fetch")
+    default_dir = pathlib.Path(__file__).parent.parent / "staging" / "temp"
+    out_dir = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else default_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        from markitdown import MarkItDown
+        from docling.document_converter import DocumentConverter
     except ImportError:
-        print("markitdown not found — run: bash tools/setup.sh", file=sys.stderr)
+        print("docling not found — run: bash tools/setup.sh", file=sys.stderr)
         sys.exit(1)
 
-    md = MarkItDown()
-    result = md.convert(url)
+    converter = DocumentConverter()
+    result = converter.convert(url)
+    markdown = result.document.export_to_markdown()
 
     parsed = urllib.parse.urlparse(url)
     raw_slug = (parsed.netloc + parsed.path).strip("/")
@@ -37,10 +39,8 @@ def main():
 
     out_path = out_dir / f"{slug}.md"
 
-    # Prepend source URL as a comment so the ingest workflow can reference it
-    content = f"<!-- source: {url} -->\n\n{result.text_content}"
+    content = f"<!-- source: {url} -->\n\n{markdown}"
     out_path.write_text(content, encoding="utf-8")
-
     print(out_path)
 
 

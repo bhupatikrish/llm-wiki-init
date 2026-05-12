@@ -23,7 +23,7 @@ staging/files/*
 !staging/files/.gitkeep
 
 # Temp downloads from fetch_link.py
-/tmp/llm-wiki-fetch/
+staging/temp/
 
 # Editor
 .vscode/
