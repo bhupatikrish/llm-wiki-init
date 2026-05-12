@@ -107,7 +107,7 @@ That's the only edit needed. Everything under those categories grows automatical
 bash tools/setup.sh
 ```
 
-This creates a local virtual environment (`tools/.venv/`) and installs two packages: `markitdown` (converts URLs and files to markdown) and `rank_bm25` (search). Runs in about 30 seconds.
+This creates a local virtual environment (`tools/.venv/`) and installs `docling` (converts PDFs and URLs to markdown — downloads ML models on first run, ~2 minutes) and `rank_bm25` (search).
 
 ### 4. Open in Claude Code
 
@@ -121,8 +121,9 @@ Open the wiki folder (your copy) as the project in Claude Code. The `/ingest-fil
 
 1. Copy or save any file into `staging/files/` (PDF, markdown, Word doc, text)
 2. Run `/ingest-files` in Claude Code
-3. Claude reads it, decides where it belongs in `raw/`, moves it there, and writes the wiki pages — all in one pass
-4. Browse the updated pages in `wiki/`
+3. PDFs are automatically converted to markdown via docling before ingestion — the original PDF is preserved alongside the converted file in `raw/`
+4. Claude reads each file, decides where it belongs in `raw/`, moves it there, and writes the wiki pages — all in one pass
+5. Browse the updated pages in `wiki/`
 
 ### Adding a source — link
 
@@ -238,7 +239,7 @@ flowchart LR
 ```mermaid
 graph TD
     A[staging/files/] -->|/ingest-files| C[Taxonomy Architect]
-    B[staging/links.md] -->|/ingest-links| D[fetch_link.py\nmarkitdown]
+    B[staging/links.md] -->|/ingest-links| D[fetch_link.py\ndocling]
     D --> C
     C -->|classifies & files| E[raw/\ncapability tree]
     C -->|writes in same pass| F[wiki/\nmarkdown pages]
