@@ -256,7 +256,7 @@ infrastructure                    ← (3–5 items)</pre>
       <div>
         <strong>Install Python tools</strong>
         <pre>bash tools/setup.sh</pre>
-        <p style="font-size:0.875rem; color:var(--muted)">Creates <code>tools/.venv/</code> with markitdown (converts files/URLs to markdown) and rank_bm25 (search). Takes about 30 seconds.</p>
+        <p style="font-size:0.875rem; color:var(--muted)">Creates <code>tools/.venv/</code> with docling (converts PDFs and URLs to markdown — downloads ML models on first run, ~2 minutes) and rank_bm25 (search).</p>
       </div>
     </li>
     <li>
@@ -276,7 +276,8 @@ infrastructure                    ← (3–5 items)</pre>
   <ol class="steps">
     <li><div>Copy or save a file into <code>staging/files/</code> (PDF, markdown, Word doc, text)</div></li>
     <li><div>Run <code>/ingest-files</code> in Claude Code</div></li>
-    <li><div>Claude reads it, decides where it belongs in <code>raw/</code>, moves it there, and writes wiki pages — all in one pass</div></li>
+    <li><div>PDFs are automatically converted to markdown via docling — the original PDF is preserved alongside the converted file in <code>raw/</code></div></li>
+    <li><div>Claude reads each file, decides where it belongs in <code>raw/</code>, moves it there, and writes wiki pages — all in one pass</div></li>
     <li><div>Browse updated pages in <code>wiki/</code></div></li>
   </ol>
 
@@ -362,7 +363,7 @@ infrastructure                    ← (3–5 items)</pre>
       <thead><tr><th>Skill</th><th>What it does</th><th>When to use</th></tr></thead>
       <tbody>
         <tr><td><span class="cmd">/ingest-files</span></td><td>Classify, move to <code>raw/</code>, check existing pages for conflicts, write wiki pages, clear staging</td><td>After dropping files in staging</td></tr>
-        <tr><td><span class="cmd">/ingest-links</span></td><td>Download URLs via markitdown, then ingest like files. Removes processed URLs.</td><td>After pasting links in staging/links.md</td></tr>
+        <tr><td><span class="cmd">/ingest-links</span></td><td>Download URLs via docling, then ingest like files. Removes processed URLs.</td><td>After pasting links in staging/links.md</td></tr>
         <tr><td><span class="cmd">/query &lt;question&gt;</span></td><td>Answer from wiki; reads raw source if detail is needed; files valuable answers back</td><td>Any question about your knowledge</td></tr>
         <tr><td><span class="cmd">/refresh &lt;page&gt;</span></td><td>Bring one page up to date — compare against newer sources, rewrite stale claims, log changes</td><td>When /lint flags a page stale, or you know a topic has moved</td></tr>
         <tr><td><span class="cmd">/lint</span></td><td>Health check — fix orphans, broken links, contradictions; surface stale pages (last_verified &gt; 60–90 days)</td><td>Periodically as wiki grows</td></tr>
